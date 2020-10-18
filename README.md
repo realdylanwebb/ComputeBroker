@@ -1,6 +1,10 @@
 # ComputeBroker
 Find workers for your distributed computing problem using ComputeBroker.
+
 Created for Hack the U 2020.
+
+ComputeBroker is a web service and client that allows clients to accept and distribute workloads.
+It handles client connection information and can associate a number of clients to form a distributed computing network.
 
 ## API Documentation
 All request and response bodies are in JSON

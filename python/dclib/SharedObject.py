@@ -1,4 +1,4 @@
-class AssignableSetattr(type):
+class CleanSetAttrMeta(type):
     def __new__(mcls, name, bases, attrs):
         def __setattr__(self, attr, value):
             object.__setattr__(self, attr, value)
@@ -6,37 +6,44 @@ class AssignableSetattr(type):
         init_attrs = dict(attrs)
         init_attrs['__setattr__'] = __setattr__
 
-        init_cls = super(AssignableSetattr, mcls).__new__(mcls, name, bases, init_attrs)
+        init_cls = super(CleanSetAttrMeta, mcls).__new__(mcls, name, bases, init_attrs)
 
-        real_cls = super(AssignableSetattr, mcls).__new__(mcls, name, (init_cls,), attrs)
+        real_cls = super(CleanSetAttrMeta, mcls).__new__(mcls, name, (init_cls,), attrs)
         init_cls.__real_cls = real_cls
 
         return init_cls
 
     def __call__(cls, *args, **kwargs):
-        self = super(AssignableSetattr, cls).__call__(*args, **kwargs)
-        real_cls = cls.__real_cls
-        self.__class__ = real_cls
+        real_setattr = cls.__setattr__
+        cls.__setattr__ = object.__setattr__
+        self = super(CleanSetAttrMeta, cls).__call__(*args, **kwargs)
+        cls.__setattr__ = real_setattr
         return self
 
-def synchronize(_self, _obj):
-    # Do shit here
-    return _obj
 
-def synchronize_attribute(_self, _attr, _value):
-    # Do shit here
-    pass
+class SharedObjectContainer(object):
+    __metaclass__ = CleanSetAttrMeta
+    __on_mutate = None
+    __uuid = None
 
-class SharedObject(object):
-    __metaclass__ = AssignableSetattr
+    def __init__(self, on_mutate=None, uuid=None):
+        self.__on_mutate = on_mutate
+        self.__uuid = uuid
+        super(SharedObjectContainer, self).__init__()
 
-    def __init__(self, obj):
-        self.obj = obj
-        self.id = None
-        for key, value in synchronize(self, obj).items():
-            setattr(self, key, value)
+    def __setattr__(self, key, value):
+        print('SET {} = {}'.format(key, value))
 
-    def __setattr__(self, attr, value):
-        synchronize_attribute(self, attr, value)
-        super(SharedObject, self).__setattr__(attr, value)
+        if self.__on_mutate is not None:
+            self.__on_mutate(self, key, value, self.__uuid)
+
+        super(SharedObjectContainer, self).__setattr__(key, value)
+
+
+class SharedObject(SharedObjectContainer):
+    def __init__(self, value, uuid=None, on_mutate=None):
+        if isinstance(value, type):
+            self.value = value()
+
+        super(SharedObject, self).__init__(on_mutate, uuid)
 

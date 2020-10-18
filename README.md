@@ -20,7 +20,7 @@ Before you get into the in depth API documentation, the client ships with a nice
 ```python
 from ServiceAPI import *
 
-# Getting a batch of workers
+# Getting a batch of 5 workers
 try:
     service = ServiceAPI("example@example.com", "password", "examplePublicKey", "127.0.0.1:3000", "http://vps295572.vps.ovh.ca")
     service.register()

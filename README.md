@@ -45,7 +45,7 @@ Retrieves the API key associated with the credentials and stores it internally
 ### ServiceAPI.notify()
 Syncronizes local and broker service ready for values
 ### ServiceAPI.newSession(workers::int) returns [{address: string, pubKey: string}]
-Creates a new session in the broker service and returns a session sey and associated worker addresses and public keys
+Creates a new session in the broker service and returns a session key and associated worker addresses and public keys
 ### ServiceAPI.getSession(sessionKey::string) returns [{address: string, pubKey: string}]
 Retrieves the worker addresses and public keys associated with an existing sessionKey
 

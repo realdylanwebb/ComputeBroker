@@ -132,4 +132,22 @@ Response:
 * pubKey: The public key for a worker
 * address: The public IP address for a worker
 
+## Client API Wrapper
+The client framework ships with a wrapper around the API calls
+
+### Example Usage
+```python
+from ServiceAPI import *
+
+# Getting a batch of workers
+try:
+    service = ServiceAPI("pytet", "pytest", "lolol", "localhost:69", "http://vps295572.vps.ovh.ca")
+    service.register()
+    service.login()
+    workers = service.newSession(5)
+except RequestFailedError as err:
+    #Handle failed requests here
+
+```
+
 ## Client Documentation

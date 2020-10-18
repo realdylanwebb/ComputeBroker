@@ -80,6 +80,7 @@ func (view *SessionView) Get(id string, db *sql.DB) error {
 	i := 0
 	for rows.Next() {
 		err := rows.Scan(&view.Workers[i].PubKey, &view.Workers[i].Address)
+		i++
 		if err != nil {
 			return err
 		}

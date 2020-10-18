@@ -46,4 +46,3 @@ class SharedObject(SharedObjectContainer):
             self.value = value()
 
         super(SharedObject, self).__init__(on_mutate, uuid)
-

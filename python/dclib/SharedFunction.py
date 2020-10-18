@@ -6,5 +6,3 @@ class SharedFunction:
         self.__environment = None
         self.__source = inspect.getsource(exec)
 
-
-

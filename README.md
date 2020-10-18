@@ -143,7 +143,7 @@ from ServiceAPI import *
 
 # Getting a batch of workers
 try:
-    service = ServiceAPI("pytet", "pytest", "lolol", "localhost:69", "http://vps295572.vps.ovh.ca")
+    service = ServiceAPI("example@example.com", "password", "examplePublicKey", "127.0.0.1:3000", "http://vps295572.vps.ovh.ca")
     service.register()
     service.login()
     workers = service.newSession(5)

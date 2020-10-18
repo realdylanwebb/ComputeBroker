@@ -26,9 +26,13 @@ try:
     service.register()
     service.login()
     workers = service.newSession(5)
+
+# Notifying that you are ready to accept 3 workloads
+    service.readyFor = 3
+    service.notify()
+        
 except RequestFailedError as err:
     #Handle failed requests here
-
 ```
 
 ### Class ServiceAPI(email::string, password::string, publicKey::string, localAddress::string, serviceAddress::string)

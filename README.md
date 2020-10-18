@@ -13,6 +13,44 @@ It handles client connection information and can associate a number of clients t
 [Client Documentation](#client-documentation)
 
 ## API Documentation
+
+Before you get into the in depth API documentation, the client ships with a nice wrapper for API requests.
+### Client API Wrapper
+### Example Usage
+```python
+from ServiceAPI import *
+
+# Getting a batch of workers
+try:
+    service = ServiceAPI("example@example.com", "password", "examplePublicKey", "127.0.0.1:3000", "http://vps295572.vps.ovh.ca")
+    service.register()
+    service.login()
+    workers = service.newSession(5)
+except RequestFailedError as err:
+    #Handle failed requests here
+
+```
+
+### Class ServiceAPI(email::string, password::string, publicKey::string, localAddress::string, serviceAddress::string)
+* email: Email used for login credentials
+* password: password used for login credentials
+* publicKey: the local client's public key
+* localAddress: the local service's IP address and port
+* serviceAddress: the broker service's IP or URL
+* readyFor: indicates the amount of jobs the service is ready for
+### ServiceAPI.register()
+Registers a the user credentials with the broker service
+### ServiceAPI.login()
+Retrieves the API key associated with the credentials and stores it internally
+### ServiceAPI.notify()
+Syncronizes local and broker service ready for values
+### ServiceAPI.newSession(workers::int) returns [{address: string, pubKey: string}]
+Creates a new session in the broker service and returns a session sey and associated worker addresses and public keys
+### ServiceAPI.getSession(sessionKey::string) returns [{address: string, pubKey: string}]
+Retrieves the worker addresses and public keys associated with an existing sessionKey
+
+
+## API Endpoints
 All request and response bodies are in JSON
 ### Registering a client
 ```
@@ -134,22 +172,5 @@ Response:
 * pubKey: The public key for a worker
 * address: The public IP address for a worker
 
-## Client API Wrapper
-The client framework ships with a wrapper around the API calls
-
-### Example Usage
-```python
-from ServiceAPI import *
-
-# Getting a batch of workers
-try:
-    service = ServiceAPI("example@example.com", "password", "examplePublicKey", "127.0.0.1:3000", "http://vps295572.vps.ovh.ca")
-    service.register()
-    service.login()
-    workers = service.newSession(5)
-except RequestFailedError as err:
-    #Handle failed requests here
-
-```
 
 ## Client Documentation

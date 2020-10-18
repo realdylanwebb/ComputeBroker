@@ -14,6 +14,10 @@ type SessionRequest struct {
 	Workers int `json:"workers"`
 }
 
+type TokenResponse struct {
+	Token string `json:"token"`
+}
+
 //Login returns a API key to a registered client
 func (serv *BrokerServer) Login(w http.ResponseWriter, r *http.Request) {
 
@@ -25,11 +29,22 @@ func (serv *BrokerServer) Login(w http.ResponseWriter, r *http.Request) {
 		respondErr(w, 400, "Bad request body.")
 		return
 	}
+
+	res := new(TokenResponse)
+
+	res.Token, err = view.Token(serv.DB, serv.keys)
+	if err != nil {
+		log.Print(err)
+		respondErr(w, 401, "Invalid credentials.")
+		return
+	}
+	respondJSON(w, 200, res)
+	return
 }
 
 //Register creates a new client
 func (serv *BrokerServer) Register(w http.ResponseWriter, r *http.Request) {
-
+	log.Print("HERE")
 	view := new(ClientView)
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&view)
@@ -39,6 +54,18 @@ func (serv *BrokerServer) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = view.Create(serv.DB)
+	if err != nil {
+		if err.Error()[:7] == "UNIQUE " {
+			respondErr(w, 400, "Client already exists with that email")
+			return
+		}
+		log.Print(err)
+		respondErr(w, 500, "Internal server error.")
+		return
+	}
+	respondJSON(w, 201, view)
+	return
 }
 
 //Signal changes the amount of jobs that a client is ready to recieve
@@ -58,7 +85,14 @@ func (serv *BrokerServer) Signal(w http.ResponseWriter, r *http.Request) {
 	view.JobsAvailable = int64(available)
 	view.ClientID = claims.ID
 
-	view.Signal(serv.DB)
+	err = view.Signal(serv.DB)
+	if err != nil {
+		log.Print(err)
+		respondErr(w, 500, "Internal server error.")
+		return
+	}
+	respondOK(w, "Signaled readyness.")
+	return
 }
 
 //ReqSession creates a new session and returns the associated worker information and
@@ -82,7 +116,7 @@ func (serv *BrokerServer) ReqSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	view := new(SessionView)
-	err = view.Create(body.Workers, claims.ID, serv.DB)
+	err = view.Create(body.Workers, claims.ID, serv.DB, serv.keys)
 	if err != nil {
 		log.Print(err)
 		respondErr(w, 500, "Internal server error.")
@@ -95,9 +129,24 @@ func (serv *BrokerServer) ReqSession(w http.ResponseWriter, r *http.Request) {
 
 //GetSession gets the worker information associated with a session id
 func (serv *BrokerServer) GetSession(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 
-	claims, err := serv.keys.Validate(vars["id"])
+	body := new(TokenResponse)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&body)
+	if err != nil {
+		log.Print(err)
+		respondErr(w, 400, "Bad request body.")
+		return
+	}
+
+	claims, err := serv.keys.Validate("Bearer " + body.Token)
+	if err != nil {
+		log.Print(err)
+		respondErr(w, 401, "Invalid API key.")
+		return
+	}
+
+	_, err = serv.keys.Validate(r.Header.Get("Authorization"))
 	if err != nil {
 		log.Print(err)
 		respondErr(w, 401, "Invalid API key.")

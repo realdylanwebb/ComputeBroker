@@ -35,6 +35,8 @@ func (serv *BrokerServer) Init() {
 		panic(err)
 	}
 
+	serv.keys = &keys
+
 	keys.Init(os.Getenv("AUTHENCKEY"), os.Getenv("AUTHSIGKEY"), dur)
 
 	//Resource: User
@@ -44,7 +46,7 @@ func (serv *BrokerServer) Init() {
 
 	//Resource: Session
 	serv.Router.HandleFunc("/session", serv.ReqSession).Methods("POST")
-	serv.Router.HandleFunc("/session/{key}", serv.GetSession).Methods("GET")
+	serv.Router.HandleFunc("/session/refresh", serv.GetSession).Methods("POST")
 
 }
 
@@ -58,6 +60,7 @@ func (serv *BrokerServer) Run() {
 
 func main() {
 	var serv BrokerServer
+	log.Print("STARTING")
 	serv.Init()
 	serv.Run()
 }

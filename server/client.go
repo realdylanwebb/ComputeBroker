@@ -1,6 +1,9 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+)
 
 //ClientView contains all potential fields for a user
 type ClientView struct {
@@ -43,8 +46,22 @@ func (view *ClientView) Create(db *sql.DB) error {
 }
 
 //Token returns a client's API key
-func (view *ClientView) Token(db *sql.DB) error {
-	return nil
+func (view *ClientView) Token(db *sql.DB, keys *KeyChain) (string, error) {
+	var hashed string
+	var clientID string
+	row := db.QueryRow("SELECT clientID, password FROM client WHERE email = ?", view.Email)
+	err := row.Scan(&clientID, &hashed)
+	if err != nil {
+		return "", err
+	}
+
+	if VerifyPass(view.Password, hashed) {
+		claims := new(PrivateClaims)
+		claims.ID = clientID
+		return keys.Sign(claims)
+	}
+
+	return "", errors.New("invalid login")
 }
 
 //Signal is used to update the amount of jobs the client can accept

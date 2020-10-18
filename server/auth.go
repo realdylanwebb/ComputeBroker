@@ -61,13 +61,13 @@ func (keyChain *KeyChain) Init(encKeyPath string, sigKeyPath string, TTL time.Du
 	keyChain.EncryptionKey = encKey
 	keyChain.TTL = TTL
 
-	log.Printf("LENGTH OF SIG KEY: %d", len(*keyChain.SigningKey))
 	return nil
 }
 
 //Validate retrieves claims from a token
 func (keyChain *KeyChain) Validate(tokenString string) (*PrivateClaims, error) {
-	token, err := jwt.ParseSignedAndEncrypted(tokenString)
+	log.Printf("TOKEN STRING %s", tokenString)
+	token, err := jwt.ParseSignedAndEncrypted(tokenString[7:])
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,6 @@ func (keyChain *KeyChain) Validate(tokenString string) (*PrivateClaims, error) {
 
 //Sign creates a token from a set of claims
 func (keyChain *KeyChain) Sign(claims *PrivateClaims) (string, error) {
-
 	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS512, Key: *keyChain.SigningKey}, nil)
 	if err != nil {
 		return "", err

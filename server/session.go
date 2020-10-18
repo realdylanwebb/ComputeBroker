@@ -1,16 +1,27 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
+)
 
 //SessionView contains a group of workers to return to a client
 type SessionView struct {
-	Workers []ClientView `json:"workers"`
+	Workers      []ClientView `json:"workers"`
+	SessionToken string       `json:"token"`
 }
 
 //Create creates a new session in the database
-func (view *SessionView) Create(numWorkers int, clientID string, db *sql.DB) error {
+func (view *SessionView) Create(numWorkers int, clientID string, db *sql.DB, keys *KeyChain) error {
 
 	sessionID, err := GenUUID()
+	if err != nil {
+		return err
+	}
+
+	claims := new(PrivateClaims)
+	claims.ID = sessionID
+	view.SessionToken, err = keys.Sign(claims)
 	if err != nil {
 		return err
 	}
@@ -62,13 +73,15 @@ func (view *SessionView) Create(numWorkers int, clientID string, db *sql.DB) err
 func (view *SessionView) Get(id string, db *sql.DB) error {
 
 	var numWorkers int64
-	row := db.QueryRow("COUNT (SELECT sessionID FROM session WHERE sessionID = ?)", id)
+	row := db.QueryRow("SELECT COUNT(sessionID) FROM session WHERE sessionID = ?", id)
 	err := row.Scan(&numWorkers)
 	if err != nil {
 		return err
 	}
 
-	rows, err := db.Query("SELECT pubKey, address FROM worker WHERE clientID = ANY (SELECT workerID FROM session WHERE sessionID = ?)", id)
+	log.Print(numWorkers)
+
+	rows, err := db.Query("SELECT pubKey, address FROM client WHERE clientID IN (SELECT workerID FROM session WHERE sessionID = ?)", id)
 	if err != nil {
 		return err
 	}

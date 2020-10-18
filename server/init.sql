@@ -10,8 +10,8 @@ CREATE TABLE client (
 );
 
 CREATE TABLE session (
-    clientID TEXT NOT NULL PRIMARY KEY,
-    workerID TEXT NOT NULL PRIMARY KEY,
+    clientID TEXT NOT NULL,
+    workerID TEXT NOT NULL,
     sessionID TEXT NOT NULL,
     FOREIGN KEY (clientID)
         REFERENCES client (clientID),

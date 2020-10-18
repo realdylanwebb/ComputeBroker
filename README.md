@@ -6,6 +6,8 @@ Created for Hack the U 2020.
 ComputeBroker is a web service and client that allows clients to accept and distribute workloads.
 It handles client connection information and can associate a number of clients to form a distributed computing network.
 
+### The Alpha Server is currently hosted at vps295572.vps.ovh.ca
+
 [API Documentation](#api-documentation)
 
 [Client Documentation](#client-documentation)

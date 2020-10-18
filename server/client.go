@@ -7,12 +7,12 @@ import (
 
 //ClientView contains all potential fields for a user
 type ClientView struct {
-	ClientID      string
-	Email         string `json:"email"`
-	Password      string `json:"password"`
-	PubKey        string `json:"pubKey"`
-	Address       string `json:"address"`
-	JobsAvailable int64  `json:"jobsAvailable"`
+	ClientID      string `json:"-"`
+	Email         string `json:"email,omitempty"`
+	Password      string `json:"password,omitempty"`
+	PubKey        string `json:"pubKey,omitempty"`
+	Address       string `json:"address,omitempty"`
+	JobsAvailable int64  `json:"jobsAvailable,omitempty"`
 }
 
 //Create inserts a client into the database

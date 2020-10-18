@@ -55,7 +55,8 @@ Retrieves the worker addresses and public keys associated with an existing sessi
 
 
 ## API Endpoints
-All request and response bodies are in JSON
+If you'd rather make your own API requests, here's the raw API endpoints.
+All request and response bodies are in JSON format.
 ### Registering a client
 ```
 POST /client

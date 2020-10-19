@@ -43,11 +43,12 @@ func (serv *BrokerServer) Init() {
 	serv.Router.HandleFunc("/client", serv.Register).Methods("POST")
 	serv.Router.HandleFunc("/client/signal/{available}", serv.Signal).Methods("POST")
 	serv.Router.HandleFunc("/login", serv.Login).Methods("POST")
+	serv.Router.HandleFunc("/client/get", serv.GetUser).Methods("POST")
 
 	//Resource: Session
 	serv.Router.HandleFunc("/session", serv.ReqSession).Methods("POST")
 	serv.Router.HandleFunc("/session/refresh", serv.GetSession).Methods("POST")
-
+	serv.Router.HandleFunc("/session/user", serv.GetUserSessions).Methods("POST")
 }
 
 //Run starts the server on the specified address

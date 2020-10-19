@@ -95,6 +95,28 @@ func (serv *BrokerServer) Signal(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+//GetUser returns user information to a valid user
+func (serv *BrokerServer) GetUser(w http.ResponseWriter, r *http.Request) {
+	claims, err := serv.keys.Validate(r.Header.Get("Authorization"))
+	if err != nil {
+		log.Print(err)
+		respondErr(w, 401, "Invalid API key.")
+		return
+	}
+
+	view := new(ClientView)
+	view.ClientID = claims.ID
+
+	err = view.Read(serv.DB)
+	if err != nil {
+		log.Print(err)
+		respondErr(w, 500, "Internal server error.")
+		return
+	}
+	respondJSON(w, 200, view)
+	return
+}
+
 //ReqSession creates a new session and returns the associated worker information and
 //a session key
 func (serv *BrokerServer) ReqSession(w http.ResponseWriter, r *http.Request) {
@@ -110,6 +132,7 @@ func (serv *BrokerServer) ReqSession(w http.ResponseWriter, r *http.Request) {
 
 	claims, err := serv.keys.Validate(r.Header.Get("Authorization"))
 	if err != nil {
+		log.Print(r.Header.Get("Authorization"))
 		log.Print(err)
 		respondErr(w, 401, "Invalid API key.")
 		return
@@ -162,6 +185,28 @@ func (serv *BrokerServer) GetSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, 200, view)
+	return
+}
+
+//GetUserSessions retrieves all the sessions associated with a worker
+func (serv *BrokerServer) GetUserSessions(w http.ResponseWriter, r *http.Request) {
+
+	claims, err := serv.keys.Validate(r.Header.Get("Authorization"))
+	if err != nil {
+		log.Print(err)
+		respondErr(w, 401, "Invalid API key.")
+		return
+	}
+
+	userSessions := new(AllSessionsView)
+	err = userSessions.GetUserSessions(claims.ID, serv.DB)
+	if err != nil {
+		log.Print(err)
+		respondErr(w, 500, "Internal server error.")
+		return
+	}
+
+	respondJSON(w, 200, userSessions)
 	return
 }
 

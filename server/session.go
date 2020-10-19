@@ -11,6 +11,11 @@ type SessionView struct {
 	SessionToken string       `json:"token"`
 }
 
+//AllSessionsView contains a group of user sessions
+type AllSessionsView struct {
+	Sessions []SessionView `json:"sessions"`
+}
+
 //Create creates a new session in the database
 func (view *SessionView) Create(numWorkers int, clientID string, db *sql.DB, keys *KeyChain) error {
 
@@ -54,6 +59,8 @@ func (view *SessionView) Create(numWorkers int, clientID string, db *sql.DB, key
 		if err != nil {
 			return err
 		}
+
+		log.Print(affected)
 
 		if affected == 0 {
 			return ErrNoRowsAffected
@@ -99,5 +106,40 @@ func (view *SessionView) Get(id string, db *sql.DB) error {
 		}
 	}
 
+	return nil
+}
+
+//GetUserSessions returns all the sessions associated with a user
+func (view *AllSessionsView) GetUserSessions(userID string, db *sql.DB) error {
+
+	var count int64
+	row := db.QueryRow("SELECT COUNT(DISTINCT sessionID) FROM session WHERE clientID = ?", userID)
+	err := row.Scan(&count)
+	if err != nil {
+		return err
+	}
+
+	sessions := make([]SessionView, count)
+	ids := make([]string, count)
+	rows, err := db.Query("SELECT DISTINCT sessionID FROM session WHERE clientID = ?", userID)
+
+	i := 0
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&ids[i])
+		i++
+		if err != nil {
+			return err
+		}
+	}
+
+	for i = 0; int64(i) < count; i++ {
+		err := sessions[i].Get(ids[i], db)
+		if err != nil {
+			return err
+		}
+	}
+
+	view.Sessions = sessions
 	return nil
 }

@@ -83,3 +83,12 @@ func (view *ClientView) Signal(db *sql.DB) error {
 
 	return nil
 }
+
+func (view *ClientView) Read(db *sql.DB) error {
+	row := db.QueryRow("SELECT email, pubKey, address, jobsAvailable FROM client WHERE clientID = ?", view.ClientID)
+	err := row.Scan(&view.Email, &view.PubKey, &view.Address, &view.JobsAvailable)
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -12,7 +12,7 @@ type ClientView struct {
 	Password      string `json:"password,omitempty"`
 	PubKey        string `json:"pubKey,omitempty"`
 	Address       string `json:"address,omitempty"`
-	JobsAvailable int64  `json:"jobsAvailable,omitempty"`
+	JobsAvailable int64  `json:"jobsAvailable"`
 }
 
 //Create inserts a client into the database

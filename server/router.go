@@ -14,6 +14,7 @@ type SessionRequest struct {
 	Workers int `json:"workers"`
 }
 
+//TokenResponse is used to marshall a token in to a json response body
 type TokenResponse struct {
 	Token string `json:"token"`
 }

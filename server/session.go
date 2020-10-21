@@ -57,6 +57,14 @@ func (view *SessionView) Create(numWorkers int, clientID string, db *sql.DB, key
 
 		affected, err := result.RowsAffected()
 		if err != nil {
+			result, delErr := db.Exec("DELETE * FROM session WHERE sessionID = ?", sessionID)
+			affectedDel, delErr := result.RowsAffected()
+			if delErr != nil {
+				log.Printf("CRITICAL ERROR, COULD NOT ROLL BACK CHANGES IN %s DATA CORRUPTION HAS OCCURED\n", sessionID)
+			}
+			if affectedDel != affected {
+				log.Printf("CRITICAL ERROR, ONLY ROLLED BACK %d CHANGES OF %d IN SESSION %s\n", affectedDel, affected, sessionID)
+			}
 			return err
 		}
 
